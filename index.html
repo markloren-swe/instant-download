@@ -417,6 +417,28 @@
       transform: translateY(0);
     }
 
+    /* Review Chips & Rating */
+    .review-chip {
+      background: rgba(147, 51, 234, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #f8fafc;
+      font-size: 0.78rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-align: left;
+      cursor: pointer;
+      line-height: 1.4;
+      transition: background 0.15s ease, transform 0.1s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .review-chip:active {
+      transform: scale(0.98);
+      background: rgba(147, 51, 234, 0.35);
+    }
+
     footer {
       text-align: center;
       font-size: 0.75rem;
@@ -473,7 +495,7 @@
 
       <!-- Experience Rating Widget -->
       <div class="cta-group">
-        <h2>Rate Your Booth Experience</h2>
+        <h2>Rate Your Experience</h2>
         <div class="rating-container" id="ratingContainer">
           <button class="star-btn" data-star="1">★</button>
           <button class="star-btn" data-star="2">★</button>
@@ -481,7 +503,29 @@
           <button class="star-btn" data-star="4">★</button>
           <button class="star-btn" data-star="5">★</button>
         </div>
-        <p id="ratingFeedback" style="font-size: 0.78rem; color: var(--text-muted); display: none;"></p>
+
+        <!-- Randomized Review Suggestions (Triggered on 4-5 stars) -->
+        <div id="reviewSuggestions" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;">
+          <p style="font-size: 0.78rem; color: #c084fc; font-weight: 600;">
+            Tap to copy a quick review & post on Facebook:
+          </p>
+          
+          <button class="review-chip" data-type="print">
+            ✨ "Great magnetic prints & fast QR download!"
+          </button>
+          
+          <button class="review-chip" data-type="service">
+            💖 "Friendly team & smooth photobooth setup!"
+          </button>
+          
+          <button class="review-chip" data-type="overall">
+            🌟 "Super fun experience & high-quality layout!"
+          </button>
+        </div>
+
+        <p id="lowRatingFeedback" style="font-size: 0.78rem; color: var(--text-muted); display: none; margin-top: 8px;">
+          Thank you for your feedback! We will continue improving our service.
+        </p>
       </div>
 
       <!-- Direct Messenger Booking CTA -->
@@ -667,10 +711,45 @@
       });
     });
 
-    // Rating Widget Interaction
+    // ==========================================
+    // RATING & DYNAMIC SPAM-PROOF REVIEW SYSTEM
+    // ==========================================
+    const FB_REVIEWS_URL = "https://www.facebook.com/reelmomentos/reviews/";
     const starButtons = document.querySelectorAll('.star-btn');
-    const ratingFeedback = document.getElementById('ratingFeedback');
+    const reviewSuggestions = document.getElementById('reviewSuggestions');
+    const lowRatingFeedback = document.getElementById('lowRatingFeedback');
+    const reviewChips = document.querySelectorAll('.review-chip');
 
+    // Dynamic word pools to prevent repetitive spam flags
+    const reviewOpeners = [
+      "Had an awesome time with Reel Momentos!",
+      "Super fun photobooth experience tonight!",
+      "Loved taking photos with Reel Momentos!",
+      "Such a great addition to the celebration!",
+      "Best photobooth setup we have experienced!"
+    ];
+
+    const reviewFeatures = [
+      "The magnetic prints came out super clear and sharp.",
+      "The digital copy via QR code was instantaneous and smooth.",
+      "The booth team was very polite, accommodating, and energetic.",
+      "The photo strip layout design was really clean and vibrant.",
+      "Zero hassle claiming our pictures, scanned and saved right away."
+    ];
+
+    const reviewClosings = [
+      "Highly recommended for events and parties! 📸✨",
+      "Definitely booking them for our next event! 💖",
+      "Solid 5-star service from start to finish! 🙌",
+      "Keep up the great work, Reel Momentos! 💯🎉",
+      "Thank you for capturing these special memories! 🌟"
+    ];
+
+    function getRandomPoolItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Star Selection Handler
     starButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const rating = parseInt(btn.dataset.star, 10);
@@ -678,12 +757,30 @@
           b.classList.toggle('active', idx < rating);
         });
 
-        ratingFeedback.style.display = 'block';
         if (rating >= 4) {
-          ratingFeedback.innerHTML = `Thank you! 💖 <a href="${FB_PAGE_URL}" target="_blank" style="color: #c084fc; text-decoration: underline;">Leave a quick review on our Facebook page</a>`;
+          lowRatingFeedback.style.display = 'none';
+          reviewSuggestions.style.display = 'flex';
         } else {
-          ratingFeedback.innerText = "Thank you for your feedback! We hope to celebrate with you again soon.";
+          reviewSuggestions.style.display = 'none';
+          lowRatingFeedback.style.display = 'block';
         }
+      });
+    });
+
+    // 1-Tap Copy & Redirect with Dynamic Sentence Variations
+    reviewChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const uniqueReview = `${getRandomPoolItem(reviewOpeners)} ${getRandomPoolItem(reviewFeatures)} ${getRandomPoolItem(reviewClosings)}`;
+
+        navigator.clipboard.writeText(uniqueReview).then(() => {
+          showToast("✓ Review copied! Opening Facebook...");
+          
+          setTimeout(() => {
+            window.open(FB_REVIEWS_URL, '_blank');
+          }, 800);
+        }).catch(() => {
+          window.open(FB_REVIEWS_URL, '_blank');
+        });
       });
     });
 
