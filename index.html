@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Reel Momentos - Download Photo</title>
   
-  <!-- Confetti script -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -16,6 +15,7 @@
       --text-muted: #cbd5e1;
       --fb-blue: #1877f2;
       --fb-blue-hover: #166fe5;
+      --msg-blue: #0084ff;
       --brand-gradient: linear-gradient(135deg, #9333ea 0%, #1d4ed8 100%);
       --brand-gradient-hover: linear-gradient(135deg, #a855f7 0%, #2563eb 100%);
       --border-color: rgba(255, 255, 255, 0.12);
@@ -79,10 +79,11 @@
       margin-top: 2px;
     }
 
-    /* Zero-Crop Dynamic Hero Container */
+    /* Zero-Crop Dynamic Hero Container with Skeleton Animation */
     .photo-wrapper {
       width: 100%;
-      max-height: 48vh;
+      min-height: 250px;
+      max-height: 50vh;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -93,18 +94,40 @@
       border-radius: 20px;
       padding: 10px;
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 15px var(--neon-glow);
+      position: relative;
       overflow: hidden;
+    }
+
+    /* Skeleton Placeholder */
+    .skeleton-loader {
+      position: absolute;
+      inset: 10px;
+      border-radius: 12px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     .photo-wrapper img {
       max-width: 100%;
-      max-height: 45vh;
+      max-height: 48vh;
       width: auto;
       height: auto;
       object-fit: contain;
       border-radius: 12px;
       display: block;
-      transition: opacity 0.2s ease-in-out;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      z-index: 1;
+    }
+
+    .photo-wrapper img.loaded {
+      opacity: 1;
     }
 
     .actions-card {
@@ -174,6 +197,11 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
+    .btn-messenger {
+      background: linear-gradient(135deg, #0084ff 0%, #a855f7 100%);
+      color: #ffffff;
+    }
+
     /* Tag Copy Section */
     .tags-section {
       background: rgba(22, 16, 44, 0.5);
@@ -205,7 +233,7 @@
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 12px;
-      display: none; /* revealed when items exist */
+      display: none;
     }
 
     .carousel-section h2 {
@@ -255,6 +283,29 @@
       object-fit: contain;
     }
 
+    /* Floating Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #9333ea;
+      color: #f8fafc;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 99;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     footer {
       text-align: center;
       font-size: 0.75rem;
@@ -262,12 +313,6 @@
       margin-top: 6px;
       padding-bottom: 24px;
       line-height: 1.5;
-    }
-
-    footer a {
-      color: #a855f7;
-      text-decoration: none;
-      font-weight: 600;
     }
   </style>
 </head>
@@ -277,16 +322,17 @@
     <header>
       <img class="brand-logo" src="logo.png" alt="Reel Momentos" onerror="this.style.display='none'">
       <h1>Reel Momentos Photobooth</h1>
-      <p>✨ Your event photo is ready! ✨</p>
+      <p id="eventSubtitle">✨ Your event photo is ready! ✨</p>
     </header>
 
-    <!-- Main Dynamic Hero Preview -->
-    <div class="photo-wrapper">
-      <img id="photoPreview" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600" alt="Photobooth memory">
+    <!-- Main Dynamic Hero Preview with Skeleton -->
+    <div class="photo-wrapper" id="photoWrapper">
+      <div class="skeleton-loader" id="skeletonLoader"></div>
+      <img id="photoPreview" alt="Photobooth memory">
     </div>
 
     <div class="actions-card">
-      <!-- Step 1: Facebook Soft Gate -->
+      <!-- Step 1: Facebook Soft Gate & Tags -->
       <div class="cta-group">
         <h2>Step 1: Support the Booth</h2>
         <a id="facebookBtn" class="btn btn-facebook" href="#">
@@ -296,7 +342,7 @@
           Like Our Facebook Page
         </a>
         <div class="tags-section">
-          <span id="tagsText">#ReelMomentos @reelmomentosph</span>
+          <span id="tagsText">#ReelMomentos #Photobooth @reelmomentosph</span>
           <button class="copy-btn" id="copyBtn">📋 Copy</button>
         </div>
       </div>
@@ -317,38 +363,59 @@
         <h2>📸 Recent Event Memories</h2>
         <div class="carousel-wrapper" id="carouselWrapper"></div>
       </div>
+
+      <!-- Direct Messenger Booking CTA -->
+      <div class="cta-group" style="background: rgba(22, 16, 44, 0.45); border-color: rgba(168, 85, 247, 0.25);">
+        <h2>Planning a Celebration?</h2>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">
+          Bring modern photobooth memories to your next wedding, birthday, or corporate event!
+        </p>
+        <a class="btn btn-messenger" href="https://m.me/reelmomentosph" target="_blank" rel="noopener">
+          💬 Inquire on Messenger
+        </a>
+      </div>
     </div>
 
     <footer>
       Powered by <strong>Reel Momentos Photobooth</strong><br>
-      Cabuyao, Laguna • <a href="https://facebook.com/reelmomentosph" target="_blank">Book your event with us</a>
+      Cabuyao, Laguna • Affordable & BIR/DTI Registered
     </footer>
   </div>
 
+  <div class="toast" id="toast">✓ Hashtags copied! Tag us in your IG stories!</div>
+
   <script>
-    // Configuration
-    const R2_BASE_URL = "https://pub-0334261e455f48caa993f26bac6d09f4.r2.dev";
+    const CLOUD_NAME = "on4f4shz";
     const FB_PAGE_URL = "https://www.facebook.com/reelmomentosph";
     const FB_APP_DEEP_LINK = "fb://facewebmodal/f?href=" + encodeURIComponent(FB_PAGE_URL);
 
-    // Elements
     const photoPreview = document.getElementById('photoPreview');
+    const skeletonLoader = document.getElementById('skeletonLoader');
     const downloadBtn = document.getElementById('downloadBtn');
     const facebookBtn = document.getElementById('facebookBtn');
     const shareBtn = document.getElementById('shareBtn');
     const copyBtn = document.getElementById('copyBtn');
+    const toast = document.getElementById('toast');
     const carouselSection = document.getElementById('carouselSection');
     const carouselWrapper = document.getElementById('carouselWrapper');
 
-    // Parse URL params: ?event=EVENT_NAME&img=PHOTO_URL
+    // Parse URL params
     const params = new URLSearchParams(window.location.search);
     const photoParam = params.get('img');
     const eventParam = params.get('event');
 
-    // Load Main Image
+    // Smooth image load handling
+    photoPreview.addEventListener('load', () => {
+      skeletonLoader.style.display = 'none';
+      photoPreview.classList.add('loaded');
+    });
+
     if (photoParam) {
       photoPreview.src = photoParam;
       downloadBtn.href = photoParam;
+    } else {
+      photoPreview.src = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600";
+      downloadBtn.href = photoPreview.src;
     }
 
     // Trigger Confetti Pop
@@ -361,14 +428,15 @@
       });
 
       if (eventParam) {
-        fetchLatestMemories(eventParam);
+        fetchCloudinaryMemories(eventParam);
       }
     });
 
-    // Fetch latest 5 photos for carousel
-    async function fetchLatestMemories(eventId) {
+    // Fetch latest.json directly from Cloudinary raw assets
+    async function fetchCloudinaryMemories(eventId) {
       try {
-        const res = await fetch(`${R2_BASE_URL}/events/${eventId}/latest.json?t=${Date.now()}`);
+        const jsonUrl = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/reel-momentos/${eventId}/latest.json?t=${Date.now()}`;
+        const res = await fetch(jsonUrl);
         if (!res.ok) return;
         const data = await res.json();
 
@@ -379,6 +447,8 @@
             item.className = 'carousel-item';
             item.innerHTML = `<img src="${imgUrl}" alt="Event Memory">`;
             item.addEventListener('click', () => {
+              skeletonLoader.style.display = 'block';
+              photoPreview.classList.remove('loaded');
               photoPreview.src = imgUrl;
               downloadBtn.href = imgUrl;
               window.scrollTo({ top: 120, behavior: 'smooth' });
@@ -388,16 +458,16 @@
           carouselSection.style.display = 'block';
         }
       } catch (e) {
-        console.warn("Could not load latest memories:", e);
+        console.warn("Carousel sync unavailable:", e);
       }
     }
 
-    // Copy Hashtags
+    // Copy Hashtags with Toast Notification
     copyBtn.addEventListener('click', () => {
       const text = document.getElementById('tagsText').innerText;
       navigator.clipboard.writeText(text).then(() => {
-        copyBtn.innerText = "✓ Copied!";
-        setTimeout(() => { copyBtn.innerText = "📋 Copy"; }, 2000);
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 2500);
       });
     });
 
