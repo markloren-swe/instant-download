@@ -693,9 +693,11 @@
       pendingAction = null;
     }
 
-    // Modal Interaction Handlers
+    // Download retains the support modal gate
     downloadBtn.addEventListener('click', () => triggerActionWithGate('download'));
-    shareBtn.addEventListener('click', () => triggerActionWithGate('share'));
+
+    // Share triggers the instant caption-copy & story share sheet without interruption
+    shareBtn.addEventListener('click', () => executeShare());
 
     modalFollowBtn.addEventListener('click', () => {
       supportModal.classList.remove('open');
