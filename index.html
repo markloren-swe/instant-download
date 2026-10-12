@@ -647,26 +647,40 @@
       }
     }
 
-    // Web Share API Routine
+   // Enhanced Share Routine: Auto-copies caption, then triggers share sheet
     async function executeShare() {
+      const cleanCaption = captionText.innerText.replace(/"/g, '');
+
+      // 1. Silently copy caption to user's clipboard first
+      try {
+        await navigator.clipboard.writeText(cleanCaption);
+        showToast("✓ Caption copied! Paste it into your story!");
+      } catch (e) {
+        // Continue even if clipboard access is denied
+      }
+
+      // 2. Trigger native share sheet with the photo
       if (navigator.share) {
         try {
           const resp = await fetch(activePhotoUrl);
           const blob = await resp.blob();
           const file = new File([blob], 'reel-momentos.jpg', { type: blob.type });
+
           await navigator.share({
             title: 'My Reel Momentos Memory',
-            text: captionText.innerText.replace(/"/g, ''),
+            text: cleanCaption, // Accepted by apps like WhatsApp/Twitter, ignored by IG
             files: [file]
           });
-        } catch {
-          // User canceled or fallback to Instagram web
-          window.location.href = "instagram://story-camera";
+        } catch (err) {
+          // If guest cancels or share fails, fallback to direct download
+          if (err.name !== 'AbortError') {
+            executeDirectDownload();
+          }
         }
       } else {
-        // Desktop / Unsupported fallback
+        // Desktop / Unsupported browser fallback
         executeDirectDownload();
-        showToast("Photo saved! Upload it to your Instagram or Facebook stories.");
+        showToast("✓ Caption copied! Upload photo to your stories & paste.");
       }
     }
 
