@@ -10,16 +10,16 @@
   <style>
     :root {
       --bg: #09031d;
-      --card-bg: rgba(22, 16, 44, 0.75);
+      --card-bg: rgba(22, 16, 44, 0.78);
+      --card-border: rgba(255, 255, 255, 0.12);
       --text-main: #f8fafc;
       --text-muted: #cbd5e1;
       --fb-blue: #1877f2;
       --fb-blue-hover: #166fe5;
-      --msg-blue: #0084ff;
+      --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
       --brand-gradient: linear-gradient(135deg, #9333ea 0%, #1d4ed8 100%);
-      --brand-gradient-hover: linear-gradient(135deg, #a855f7 0%, #2563eb 100%);
-      --border-color: rgba(255, 255, 255, 0.12);
       --neon-glow: rgba(147, 51, 234, 0.35);
+      --star-active: #fbbf24;
     }
 
     * {
@@ -79,7 +79,7 @@
       margin-top: 2px;
     }
 
-    /* Zero-Crop Dynamic Hero Container with Skeleton Animation */
+    /* Protected Photo Preview Container */
     .photo-wrapper {
       width: 100%;
       min-height: 250px;
@@ -90,15 +90,17 @@
       background: var(--card-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       border-radius: 20px;
       padding: 10px;
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 15px var(--neon-glow);
       position: relative;
       overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
-    /* Skeleton Placeholder */
     .skeleton-loader {
       position: absolute;
       inset: 10px;
@@ -124,6 +126,10 @@
       opacity: 0;
       transition: opacity 0.3s ease-in-out;
       z-index: 1;
+      pointer-events: none; /* Prevents long-press save menu */
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .photo-wrapper img.loaded {
@@ -141,12 +147,12 @@
       background: var(--card-bg);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       text-align: center;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
@@ -179,12 +185,6 @@
       transform: scale(0.98);
     }
 
-    .btn-facebook {
-      background-color: var(--fb-blue);
-      color: #ffffff;
-      box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
-    }
-
     .btn-download {
       background: var(--brand-gradient);
       color: #ffffff;
@@ -192,9 +192,15 @@
     }
 
     .btn-share {
-      background-color: rgba(255, 255, 255, 0.08);
-      color: #f1f5f9;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--ig-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(220, 39, 67, 0.25);
+    }
+
+    .btn-facebook {
+      background-color: var(--fb-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
     }
 
     .btn-messenger {
@@ -202,35 +208,69 @@
       color: #ffffff;
     }
 
-    /* Tag Copy Section */
-    .tags-section {
-      background: rgba(22, 16, 44, 0.5);
-      border: 1px dashed rgba(168, 85, 247, 0.4);
-      border-radius: 10px;
-      padding: 8px 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.78rem;
+    /* Social Caption Card */
+    .caption-card {
+      background: rgba(15, 10, 30, 0.6);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: left;
     }
 
-    .copy-btn {
-      background: #9333ea;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      cursor: pointer;
+    .caption-card p {
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      line-height: 1.4;
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+
+    .caption-btn {
+      background: rgba(147, 51, 234, 0.25);
+      border: 1px solid #9333ea;
+      color: #e9d5ff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
       font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    /* Dynamic Fixed-Height Carousel */
+    /* Rating Widget */
+    .rating-container {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .star-btn {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      color: rgba(255, 255, 255, 0.25);
+      cursor: pointer;
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+
+    .star-btn.active {
+      color: var(--star-active);
+      text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    }
+
+    .star-btn:active {
+      transform: scale(1.2);
+    }
+
+    /* Animated Carousel */
     .carousel-section {
       width: 100%;
       background: var(--card-bg);
       backdrop-filter: blur(12px);
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 12px;
       display: none;
@@ -251,9 +291,10 @@
       overflow-x: auto;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
-      height: 105px;
+      height: 110px;
       align-items: center;
       padding-bottom: 2px;
+      scroll-behavior: smooth;
     }
 
     .carousel-wrapper::-webkit-scrollbar {
@@ -271,8 +312,8 @@
       transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .carousel-item:hover, .carousel-item:active {
-      transform: scale(1.04);
+    .carousel-item:active {
+      transform: scale(1.05);
       border-color: #a855f7;
     }
 
@@ -280,17 +321,86 @@
       height: 100%;
       width: auto;
       display: block;
-      object-fit: contain;
+      pointer-events: none;
     }
 
-    /* Floating Toast Notification */
+    /* Interstitial Support Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 2, 12, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: #140d2b;
+      border: 1px solid #9333ea;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(147, 51, 234, 0.4);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 360px;
+      padding: 24px 20px;
+      text-align: center;
+      transform: scale(0.92);
+      transition: transform 0.25s ease;
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 8px;
+      color: #f8fafc;
+    }
+
+    .modal-card p {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .skip-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px;
+      text-decoration: underline;
+    }
+
+    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: 24px;
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid #9333ea;
       color: #f8fafc;
-      padding: 10px 16px;
+      padding: 10px 18px;
       border-radius: 20px;
       font-size: 0.8rem;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
@@ -298,7 +408,8 @@
       pointer-events: none;
       transform: translateY(20px);
       transition: opacity 0.2s ease, transform 0.2s ease;
-      z-index: 99;
+      z-index: 1001;
+      text-align: center;
     }
 
     .toast.show {
@@ -325,52 +436,61 @@
       <p id="eventSubtitle">✨ Your event photo is ready! ✨</p>
     </header>
 
-    <!-- Main Dynamic Hero Preview with Skeleton -->
-    <div class="photo-wrapper" id="photoWrapper">
+    <!-- Photo Preview (Direct saving & long press suppressed) -->
+    <div class="photo-wrapper" id="photoWrapper" oncontextmenu="return false;">
       <div class="skeleton-loader" id="skeletonLoader"></div>
-      <img id="photoPreview" alt="Photobooth memory">
+      <img id="photoPreview" alt="Photobooth memory" draggable="false" oncontextmenu="return false;">
     </div>
 
     <div class="actions-card">
-      <!-- Step 1: Facebook Soft Gate & Tags -->
+      <!-- Step 1: Save & Share Actions -->
       <div class="cta-group">
-        <h2>Step 1: Support the Booth</h2>
-        <a id="facebookBtn" class="btn btn-facebook" href="#">
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-          </svg>
-          Like Our Facebook Page
-        </a>
-        <div class="tags-section">
-          <span id="tagsText">#ReelMomentos #Photobooth @reelmomentosph</span>
-          <button class="copy-btn" id="copyBtn">📋 Copy</button>
-        </div>
-      </div>
-
-      <!-- Step 2: Download & Native Share -->
-      <div class="cta-group">
-        <h2>Step 2: Save Your Memory</h2>
-        <a id="downloadBtn" class="btn btn-download" href="#" download="reel-momentos-photo.jpg">
+        <h2>Save Your High-Res Memory</h2>
+        <button id="downloadBtn" class="btn btn-download">
           📥 Download High-Res Photo
-        </a>
-        <button id="shareBtn" class="btn btn-share" style="display: none;">
+        </button>
+        <button id="shareBtn" class="btn btn-share">
           📲 Share to Stories / IG
         </button>
       </div>
 
-      <!-- Recent Memories Dynamic Carousel -->
+      <!-- Step 2: Pre-Written Social Caption -->
+      <div class="cta-group">
+        <h2>Post & Tag Us</h2>
+        <div class="caption-card">
+          <p id="captionText">"Making unforgettable memories with @reelmomentos! 📸✨ #ReelMomentos #Photobooth"</p>
+          <button class="caption-btn" id="copyCaptionBtn">
+            📋 Copy Ready Caption
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Event Carousel -->
       <div class="carousel-section" id="carouselSection">
         <h2>📸 Recent Event Memories</h2>
         <div class="carousel-wrapper" id="carouselWrapper"></div>
       </div>
 
+      <!-- Experience Rating Widget -->
+      <div class="cta-group">
+        <h2>Rate Your Booth Experience</h2>
+        <div class="rating-container" id="ratingContainer">
+          <button class="star-btn" data-star="1">★</button>
+          <button class="star-btn" data-star="2">★</button>
+          <button class="star-btn" data-star="3">★</button>
+          <button class="star-btn" data-star="4">★</button>
+          <button class="star-btn" data-star="5">★</button>
+        </div>
+        <p id="ratingFeedback" style="font-size: 0.78rem; color: var(--text-muted); display: none;"></p>
+      </div>
+
       <!-- Direct Messenger Booking CTA -->
       <div class="cta-group" style="background: rgba(22, 16, 44, 0.45); border-color: rgba(168, 85, 247, 0.25);">
         <h2>Planning a Celebration?</h2>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">
-          Bring modern photobooth memories to your next wedding, birthday, or corporate event!
+        <p style="font-size: 0.78rem; color: var(--text-muted);">
+          Bring modern photobooth prints to your wedding, birthday, or corporate celebration!
         </p>
-        <a class="btn btn-messenger" href="https://m.me/reelmomentosph" target="_blank" rel="noopener">
+        <a class="btn btn-messenger" href="https://m.me/reelmomentos" target="_blank" rel="noopener">
           💬 Inquire on Messenger
         </a>
       </div>
@@ -382,46 +502,64 @@
     </footer>
   </div>
 
-  <div class="toast" id="toast">✓ Hashtags copied! Tag us in your IG stories!</div>
+  <!-- Interstitial Support Modal -->
+  <div class="modal-overlay" id="supportModal">
+    <div class="modal-card">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">📸</div>
+      <h3>Enjoying Your Photos?</h3>
+      <p>
+        Follow <strong>Reel Momentos</strong> on Facebook to see candid highlights, behind-the-scenes snapshots, and tag your friends!
+      </p>
+      <div class="modal-actions">
+        <button id="modalFollowBtn" class="btn btn-facebook">
+          👍 Follow on Facebook & Continue
+        </button>
+        <button id="modalSkipBtn" class="skip-btn">
+          Skip & Continue Downloading
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Notice</div>
 
   <script>
     const CLOUD_NAME = "on4f4shz";
-    const FB_PAGE_URL = "https://www.facebook.com/reelmomentosph";
+    const FB_PAGE_URL = "https://www.facebook.com/reelmomentos/";
     const FB_APP_DEEP_LINK = "fb://facewebmodal/f?href=" + encodeURIComponent(FB_PAGE_URL);
 
     const photoPreview = document.getElementById('photoPreview');
     const skeletonLoader = document.getElementById('skeletonLoader');
     const downloadBtn = document.getElementById('downloadBtn');
-    const facebookBtn = document.getElementById('facebookBtn');
     const shareBtn = document.getElementById('shareBtn');
-    const copyBtn = document.getElementById('copyBtn');
+    const copyCaptionBtn = document.getElementById('copyCaptionBtn');
+    const captionText = document.getElementById('captionText');
     const toast = document.getElementById('toast');
     const carouselSection = document.getElementById('carouselSection');
     const carouselWrapper = document.getElementById('carouselWrapper');
+    const supportModal = document.getElementById('supportModal');
+    const modalFollowBtn = document.getElementById('modalFollowBtn');
+    const modalSkipBtn = document.getElementById('modalSkipBtn');
 
-    // Parse URL params
+    // Parse URL Parameters
     const params = new URLSearchParams(window.location.search);
     const photoParam = params.get('img');
     const eventParam = params.get('event');
 
-    // Smooth image load handling
+    let activePhotoUrl = photoParam || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600";
+    let pendingAction = null; // 'download' or 'share'
+
+    // Load photo
     photoPreview.addEventListener('load', () => {
       skeletonLoader.style.display = 'none';
       photoPreview.classList.add('loaded');
     });
+    photoPreview.src = activePhotoUrl;
 
-    if (photoParam) {
-      photoPreview.src = photoParam;
-      downloadBtn.href = photoParam;
-    } else {
-      photoPreview.src = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600";
-      downloadBtn.href = photoPreview.src;
-    }
-
-    // Trigger Confetti Pop
+    // Trigger celebratory confetti on launch
     window.addEventListener('DOMContentLoaded', () => {
       confetti({
-        particleCount: 90,
+        particleCount: 80,
         spread: 60,
         origin: { y: 0.65 },
         colors: ['#9333ea', '#1d4ed8', '#a855f7', '#38bdf8']
@@ -432,7 +570,131 @@
       }
     });
 
-    // Fetch latest.json directly from Cloudinary raw assets
+    // Helper: Toast trigger
+    function showToast(message) {
+      toast.innerText = message;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2800);
+    }
+
+    // Intercepted Action Handler (Checks if guest has been prompted this session)
+    function triggerActionWithGate(actionType) {
+      pendingAction = actionType;
+      const alreadyPrompted = sessionStorage.getItem('reel_support_prompted');
+
+      if (!alreadyPrompted) {
+        supportModal.classList.add('open');
+      } else {
+        executePendingAction();
+      }
+    }
+
+    // Direct High-Res Download Routine
+    async function executeDirectDownload() {
+      try {
+        showToast("Preparing high-res download...");
+        const response = await fetch(activePhotoUrl);
+        const blob = await response.blob();
+        const blobUrl = window.URL.createObjectURL(blob);
+        const tempLink = document.createElement('a');
+        tempLink.href = blobUrl;
+        tempLink.download = `reel-momentos-${Date.now()}.jpg`;
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        window.URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        // Fallback for strict browser policies
+        window.open(activePhotoUrl, '_blank');
+      }
+    }
+
+    // Web Share API Routine
+    async function executeShare() {
+      if (navigator.share) {
+        try {
+          const resp = await fetch(activePhotoUrl);
+          const blob = await resp.blob();
+          const file = new File([blob], 'reel-momentos.jpg', { type: blob.type });
+          await navigator.share({
+            title: 'My Reel Momentos Memory',
+            text: captionText.innerText.replace(/"/g, ''),
+            files: [file]
+          });
+        } catch {
+          // User canceled or fallback to Instagram web
+          window.location.href = "instagram://story-camera";
+        }
+      } else {
+        // Desktop / Unsupported fallback
+        executeDirectDownload();
+        showToast("Photo saved! Upload it to your Instagram or Facebook stories.");
+      }
+    }
+
+    function executePendingAction() {
+      if (pendingAction === 'download') {
+        executeDirectDownload();
+      } else if (pendingAction === 'share') {
+        executeShare();
+      }
+      pendingAction = null;
+    }
+
+    // Modal Interaction Handlers
+    downloadBtn.addEventListener('click', () => triggerActionWithGate('download'));
+    shareBtn.addEventListener('click', () => triggerActionWithGate('share'));
+
+    modalFollowBtn.addEventListener('click', () => {
+      sessionStorage.setItem('reel_support_prompted', 'true');
+      supportModal.classList.remove('open');
+      
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = FB_APP_DEEP_LINK;
+        setTimeout(() => { window.open(FB_PAGE_URL, '_blank'); }, 600);
+      } else {
+        window.open(FB_PAGE_URL, '_blank');
+      }
+
+      setTimeout(executePendingAction, 800);
+    });
+
+    modalSkipBtn.addEventListener('click', () => {
+      sessionStorage.setItem('reel_support_prompted', 'true');
+      supportModal.classList.remove('open');
+      executePendingAction();
+    });
+
+    // Copy Social Caption
+    copyCaptionBtn.addEventListener('click', () => {
+      const cleanCaption = captionText.innerText.replace(/"/g, '');
+      navigator.clipboard.writeText(cleanCaption).then(() => {
+        showToast("✓ Caption copied! Paste it into your IG/FB stories!");
+      });
+    });
+
+    // Rating Widget Interaction
+    const starButtons = document.querySelectorAll('.star-btn');
+    const ratingFeedback = document.getElementById('ratingFeedback');
+
+    starButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const rating = parseInt(btn.dataset.star, 10);
+        starButtons.forEach((b, idx) => {
+          b.classList.toggle('active', idx < rating);
+        });
+
+        ratingFeedback.style.display = 'block';
+        if (rating >= 4) {
+          ratingFeedback.innerHTML = `Thank you! 💖 <a href="${FB_PAGE_URL}" target="_blank" style="color: #c084fc; text-decoration: underline;">Leave a quick review on our Facebook page</a>`;
+        } else {
+          ratingFeedback.innerText = "Thank you for your feedback! We hope to celebrate with you again soon.";
+        }
+      });
+    });
+
+    // Cloudinary Carousel Fetch + Auto-Scroll Animation
     async function fetchCloudinaryMemories(eventId) {
       try {
         const jsonUrl = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/reel-momentos/${eventId}/latest.json?t=${Date.now()}`;
@@ -445,63 +707,43 @@
           data.latest_photos.forEach(imgUrl => {
             const item = document.createElement('div');
             item.className = 'carousel-item';
-            item.innerHTML = `<img src="${imgUrl}" alt="Event Memory">`;
+            item.innerHTML = `<img src="${imgUrl}" alt="Event Memory" draggable="false" oncontextmenu="return false;">`;
             item.addEventListener('click', () => {
+              activePhotoUrl = imgUrl;
               skeletonLoader.style.display = 'block';
               photoPreview.classList.remove('loaded');
               photoPreview.src = imgUrl;
-              downloadBtn.href = imgUrl;
               window.scrollTo({ top: 120, behavior: 'smooth' });
             });
             carouselWrapper.appendChild(item);
           });
           carouselSection.style.display = 'block';
+
+          // Start Smooth Auto-Scroll Animation
+          startCarouselAutoScroll();
         }
       } catch (e) {
-        console.warn("Carousel sync unavailable:", e);
+        console.warn("Carousel unavailable:", e);
       }
     }
 
-    // Copy Hashtags with Toast Notification
-    copyBtn.addEventListener('click', () => {
-      const text = document.getElementById('tagsText').innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        toast.classList.add('show');
-        setTimeout(() => { toast.classList.remove('show'); }, 2500);
-      });
-    });
+    function startCarouselAutoScroll() {
+      let scrollSpeed = 1;
+      let isPaused = false;
 
-    // Facebook Deep Linking
-    facebookBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        window.location.href = FB_APP_DEEP_LINK;
-        setTimeout(() => { window.open(FB_PAGE_URL, '_blank'); }, 600);
-      } else {
-        window.open(FB_PAGE_URL, '_blank');
-      }
-    });
+      carouselWrapper.addEventListener('touchstart', () => { isPaused = true; });
+      carouselWrapper.addEventListener('touchend', () => { setTimeout(() => { isPaused = false; }, 2000); });
+      carouselWrapper.addEventListener('mouseenter', () => { isPaused = true; });
+      carouselWrapper.addEventListener('mouseleave', () => { isPaused = false; });
 
-    // Native Web Share
-    if (navigator.share) {
-      shareBtn.style.display = 'flex';
-      shareBtn.addEventListener('click', async () => {
-        try {
-          const resp = await fetch(downloadBtn.href);
-          const blob = await resp.blob();
-          const file = new File([blob], 'reel-momentos.jpg', { type: blob.type });
-          await navigator.share({
-            title: 'My Reel Momentos Photo',
-            files: [file]
-          });
-        } catch {
-          navigator.share({
-            title: 'My Reel Momentos Photo',
-            url: window.location.href
-          }).catch(() => {});
+      setInterval(() => {
+        if (!isPaused && carouselWrapper.scrollWidth > carouselWrapper.clientWidth) {
+          carouselWrapper.scrollLeft += scrollSpeed;
+          if (carouselWrapper.scrollLeft >= carouselWrapper.scrollWidth - carouselWrapper.clientWidth) {
+            carouselWrapper.scrollLeft = 0; // Seamless loop back
+          }
         }
-      });
+      }, 35);
     }
   </script>
 </body>
