@@ -577,16 +577,10 @@
       setTimeout(() => { toast.classList.remove('show'); }, 2800);
     }
 
-    // Intercepted Action Handler (Checks if guest has been prompted this session)
+    // Intercepted Action Handler: Always opens the modal
     function triggerActionWithGate(actionType) {
       pendingAction = actionType;
-      const alreadyPrompted = sessionStorage.getItem('reel_support_prompted');
-
-      if (!alreadyPrompted) {
-        supportModal.classList.add('open');
-      } else {
-        executePendingAction();
-      }
+      supportModal.classList.add('open');
     }
 
     // Direct High-Res Download Routine
@@ -646,7 +640,6 @@
     shareBtn.addEventListener('click', () => triggerActionWithGate('share'));
 
     modalFollowBtn.addEventListener('click', () => {
-      sessionStorage.setItem('reel_support_prompted', 'true');
       supportModal.classList.remove('open');
       
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
