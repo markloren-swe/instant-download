@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Reel Momentos - Download Photo</title>
+  
+  <!-- Confetti script -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #09031d;
+      --card-bg: rgba(22, 16, 44, 0.75);
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --fb-blue: #1877f2;
+      --fb-blue-hover: #166fe5;
+      --brand-gradient: linear-gradient(135deg, #9333ea 0%, #1d4ed8 100%);
+      --brand-gradient-hover: linear-gradient(135deg, #a855f7 0%, #2563eb 100%);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --neon-glow: rgba(147, 51, 234, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top right, #1d073c, #070212), 
+                  linear-gradient(135deg, #09031d 0%, #0d0b2e 100%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #ffffff;
+      padding: 3px;
+      box-shadow: 0 0 20px rgba(147, 51, 234, 0.4);
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-size: 1.15rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 800;
+      text-shadow: 0 0 10px rgba(29, 78, 216, 0.5);
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Zero-Crop Dynamic Hero Container */
+    .photo-wrapper {
+      width: 100%;
+      max-height: 48vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 10px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 15px var(--neon-glow);
+      overflow: hidden;
+    }
+
+    .photo-wrapper img {
+      max-width: 100%;
+      max-height: 45vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      display: block;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .actions-card {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .cta-group {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .cta-group h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #c084fc;
+      font-weight: 700;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-facebook {
+      background-color: var(--fb-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(24, 119, 242, 0.3);
+    }
+
+    .btn-download {
+      background: var(--brand-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+    }
+
+    .btn-share {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Tag Copy Section */
+    .tags-section {
+      background: rgba(22, 16, 44, 0.5);
+      border: 1px dashed rgba(168, 85, 247, 0.4);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+    }
+
+    .copy-btn {
+      background: #9333ea;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    /* Dynamic Fixed-Height Carousel */
+    .carousel-section {
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 12px;
+      display: none; /* revealed when items exist */
+    }
+
+    .carousel-section h2 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #c084fc;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .carousel-wrapper {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      height: 105px;
+      align-items: center;
+      padding-bottom: 2px;
+    }
+
+    .carousel-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .carousel-item {
+      flex: 0 0 auto;
+      height: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .carousel-item:hover, .carousel-item:active {
+      transform: scale(1.04);
+      border-color: #a855f7;
+    }
+
+    .carousel-item img {
+      height: 100%;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 6px;
+      padding-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    footer a {
+      color: #a855f7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <img class="brand-logo" src="logo.png" alt="Reel Momentos" onerror="this.style.display='none'">
+      <h1>Reel Momentos Photobooth</h1>
+      <p>✨ Your event photo is ready! ✨</p>
+    </header>
+
+    <!-- Main Dynamic Hero Preview -->
+    <div class="photo-wrapper">
+      <img id="photoPreview" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600" alt="Photobooth memory">
+    </div>
+
+    <div class="actions-card">
+      <!-- Step 1: Facebook Soft Gate -->
+      <div class="cta-group">
+        <h2>Step 1: Support the Booth</h2>
+        <a id="facebookBtn" class="btn btn-facebook" href="#">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+          Like Our Facebook Page
+        </a>
+        <div class="tags-section">
+          <span id="tagsText">#ReelMomentos @reelmomentosph</span>
+          <button class="copy-btn" id="copyBtn">📋 Copy</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Download & Native Share -->
+      <div class="cta-group">
+        <h2>Step 2: Save Your Memory</h2>
+        <a id="downloadBtn" class="btn btn-download" href="#" download="reel-momentos-photo.jpg">
+          📥 Download High-Res Photo
+        </a>
+        <button id="shareBtn" class="btn btn-share" style="display: none;">
+          📲 Share to Stories / IG
+        </button>
+      </div>
+
+      <!-- Recent Memories Dynamic Carousel -->
+      <div class="carousel-section" id="carouselSection">
+        <h2>📸 Recent Event Memories</h2>
+        <div class="carousel-wrapper" id="carouselWrapper"></div>
+      </div>
+    </div>
+
+    <footer>
+      Powered by <strong>Reel Momentos Photobooth</strong><br>
+      Cabuyao, Laguna • <a href="https://facebook.com/reelmomentosph" target="_blank">Book your event with us</a>
+    </footer>
+  </div>
+
+  <script>
+    // Configuration
+    const R2_BASE_URL = "https://pub-0334261e455f48caa993f26bac6d09f4.r2.dev";
+    const FB_PAGE_URL = "https://www.facebook.com/reelmomentosph";
+    const FB_APP_DEEP_LINK = "fb://facewebmodal/f?href=" + encodeURIComponent(FB_PAGE_URL);
+
+    // Elements
+    const photoPreview = document.getElementById('photoPreview');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const facebookBtn = document.getElementById('facebookBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const carouselSection = document.getElementById('carouselSection');
+    const carouselWrapper = document.getElementById('carouselWrapper');
+
+    // Parse URL params: ?event=EVENT_NAME&img=PHOTO_URL
+    const params = new URLSearchParams(window.location.search);
+    const photoParam = params.get('img');
+    const eventParam = params.get('event');
+
+    // Load Main Image
+    if (photoParam) {
+      photoPreview.src = photoParam;
+      downloadBtn.href = photoParam;
+    }
+
+    // Trigger Confetti Pop
+    window.addEventListener('DOMContentLoaded', () => {
+      confetti({
+        particleCount: 90,
+        spread: 60,
+        origin: { y: 0.65 },
+        colors: ['#9333ea', '#1d4ed8', '#a855f7', '#38bdf8']
+      });
+
+      if (eventParam) {
+        fetchLatestMemories(eventParam);
+      }
+    });
+
+    // Fetch latest 5 photos for carousel
+    async function fetchLatestMemories(eventId) {
+      try {
+        const res = await fetch(`${R2_BASE_URL}/events/${eventId}/latest.json?t=${Date.now()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.latest_photos && data.latest_photos.length > 0) {
+          carouselWrapper.innerHTML = '';
+          data.latest_photos.forEach(imgUrl => {
+            const item = document.createElement('div');
+            item.className = 'carousel-item';
+            item.innerHTML = `<img src="${imgUrl}" alt="Event Memory">`;
+            item.addEventListener('click', () => {
+              photoPreview.src = imgUrl;
+              downloadBtn.href = imgUrl;
+              window.scrollTo({ top: 120, behavior: 'smooth' });
+            });
+            carouselWrapper.appendChild(item);
+          });
+          carouselSection.style.display = 'block';
+        }
+      } catch (e) {
+        console.warn("Could not load latest memories:", e);
+      }
+    }
+
+    // Copy Hashtags
+    copyBtn.addEventListener('click', () => {
+      const text = document.getElementById('tagsText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerText = "✓ Copied!";
+        setTimeout(() => { copyBtn.innerText = "📋 Copy"; }, 2000);
+      });
+    });
+
+    // Facebook Deep Linking
+    facebookBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = FB_APP_DEEP_LINK;
+        setTimeout(() => { window.open(FB_PAGE_URL, '_blank'); }, 600);
+      } else {
+        window.open(FB_PAGE_URL, '_blank');
+      }
+    });
+
+    // Native Web Share
+    if (navigator.share) {
+      shareBtn.style.display = 'flex';
+      shareBtn.addEventListener('click', async () => {
+        try {
+          const resp = await fetch(downloadBtn.href);
+          const blob = await resp.blob();
+          const file = new File([blob], 'reel-momentos.jpg', { type: blob.type });
+          await navigator.share({
+            title: 'My Reel Momentos Photo',
+            files: [file]
+          });
+        } catch {
+          navigator.share({
+            title: 'My Reel Momentos Photo',
+            url: window.location.href
+          }).catch(() => {});
+        }
+      });
+    }
+  </script>
+</body>
+</html>
