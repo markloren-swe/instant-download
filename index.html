@@ -495,6 +495,20 @@
         </div>
       </div>
 
+      <!-- Extra Prints Upsell Card -->
+      <div class="cta-group" style="background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.3);">
+        <h2 style="color: #4ade80;">Need Extra Physical Copies?</h2>
+        <p style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.4;">
+          Want extra magnetic prints for your group? Request a reprint directly at the claiming table!
+        </p>
+        <div style="font-size: 0.78rem; color: #86efac; font-weight: 600; margin-top: 4px; margin-bottom: 6px;">
+          💵 Cash & 📱 GCash accepted (₱50 / print)
+        </div>
+        <button id="openGcashBtn" type="button" class="btn" style="background: linear-gradient(135deg, #007dfe 0%, #0056b3 100%); color: #ffffff; padding: 11px; font-size: 0.85rem; box-shadow: 0 4px 15px rgba(0, 125, 254, 0.3);">
+          📱 View GCash QR Code
+        </button>
+      </div>
+
       <!-- Experience Rating Widget -->
       <div class="cta-group">
         <h2>Rate Your Experience</h2>
@@ -541,7 +555,7 @@
           Thank you for your feedback! We will continue improving our service.
         </p>
       </div>
-
+      
       <!-- Direct Messenger Booking CTA -->
       <div class="cta-group" style="background: rgba(22, 16, 44, 0.45); border-color: rgba(168, 85, 247, 0.25);">
         <h2>Planning a Celebration?</h2>
@@ -574,6 +588,31 @@
         </button>
         <button id="modalSkipBtn" class="skip-btn">
           Skip & Continue Downloading
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GCash QR Payment Modal -->
+  <div class="modal-overlay" id="gcashModal">
+    <div class="modal-card" style="border-color: #007dfe; box-shadow: 0 20px 40px rgba(0,0,0,0.8), 0 0 25px rgba(0, 125, 254, 0.4);">
+      <div style="font-size: 2rem; margin-bottom: 4px;">📱</div>
+      <h3 style="color: #38bdf8;">Scan to Pay via GCash</h3>
+      <p style="font-size: 0.8rem; margin-bottom: 12px;">
+        Scan directly from another phone, or <strong>save to Photos</strong> and open it in GCash via <em>Scan QR &rarr; Upload QR</em>.
+      </p>
+
+      <!-- GCash QR Image Container -->
+      <div style="background: #ffffff; padding: 12px; border-radius: 14px; display: inline-flex; justify-content: center; align-items: center; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+        <img id="gcashQrImg" src="gcash-qr.png" alt="Reel Momentos GCash QR" style="width: 210px; height: 210px; object-fit: contain; display: block;" onerror="this.alt='Place gcash-qr.png in your repository folder';">
+      </div>
+
+      <div class="modal-actions">
+        <button id="saveGcashQrBtn" type="button" class="btn" style="background: #007dfe; color: #ffffff;">
+          📥 Save QR to Photos
+        </button>
+        <button id="closeGcashModalBtn" type="button" class="skip-btn" style="color: #cbd5e1;">
+          Close
         </button>
       </div>
     </div>
@@ -740,6 +779,61 @@
         showToast("✓ Caption copied! Paste it into your IG/FB stories!");
       });
     });
+
+    // ==========================================
+    // GCASH POPUP & SAVE QR HANDLERS
+    // ==========================================
+    const openGcashBtn = document.getElementById('openGcashBtn');
+    const gcashModal = document.getElementById('gcashModal');
+    const closeGcashModalBtn = document.getElementById('closeGcashModalBtn');
+    const saveGcashQrBtn = document.getElementById('saveGcashQrBtn');
+
+    // Open Modal
+    if (openGcashBtn) {
+      openGcashBtn.addEventListener('click', () => {
+        gcashModal.classList.add('open');
+      });
+    }
+
+    // Close Modal on button tap
+    if (closeGcashModalBtn) {
+      closeGcashModalBtn.addEventListener('click', () => {
+        gcashModal.classList.remove('open');
+      });
+    }
+
+    // Close Modal when tapping outside the card
+    if (gcashModal) {
+      gcashModal.addEventListener('click', (e) => {
+        if (e.target === gcashModal) {
+          gcashModal.classList.remove('open');
+        }
+      });
+    }
+
+    // Download/Save GCash QR Image
+    if (saveGcashQrBtn) {
+      saveGcashQrBtn.addEventListener('click', async () => {
+        const qrPath = 'gcash-qr.png';
+        try {
+          showToast("Saving GCash QR...");
+          const res = await fetch(qrPath);
+          const blob = await res.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const downloadLink = document.createElement('a');
+          downloadLink.href = blobUrl;
+          downloadLink.download = 'ReelMomentos-GCash-QR.png';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          window.URL.revokeObjectURL(blobUrl);
+          showToast("✓ GCash QR saved! Open GCash > Upload QR");
+        } catch (err) {
+          // Fallback if browser security restricts programmatic download
+          window.open(qrPath, '_blank');
+        }
+      });
+    }
 
     // ==========================================
     // RATING & DYNAMIC GOOGLE REVIEW SYSTEM
