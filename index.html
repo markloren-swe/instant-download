@@ -505,10 +505,25 @@
         </div>
 
         <!-- Randomized Review Suggestions (Triggered on 4-5 stars) -->
-        <div id="reviewSuggestions" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;">
+        <!-- <div id="reviewSuggestions" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;">
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 2px;">
             <p style="font-size: 0.78rem; color: #c084fc; font-weight: 600;">
               Tap a review below to copy & post:
+            </p>
+            <button id="shuffleReviewsBtn" type="button" style="background: none; border: none; color: #38bdf8; font-size: 0.75rem; cursor: pointer; text-decoration: underline;">
+              🔄 Shuffle
+            </button>
+          </div>
+          
+          <button class="review-chip" id="reviewChip1"></button>
+          <button class="review-chip" id="reviewChip2"></button>
+          <button class="review-chip" id="reviewChip3"></button>
+        </div> -->
+        <!-- Randomized Review Suggestions (Triggered on 4-5 stars) -->
+        <div id="reviewSuggestions" style="display: none; margin-top: 10px; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 2px;">
+            <p style="font-size: 0.78rem; color: #c084fc; font-weight: 600;">
+              Tap to copy a review & rate us on Google:
             </p>
             <button id="shuffleReviewsBtn" type="button" style="background: none; border: none; color: #38bdf8; font-size: 0.75rem; cursor: pointer; text-decoration: underline;">
               🔄 Shuffle
@@ -725,9 +740,11 @@
     });
 
     // ==========================================
-    // RATING & DYNAMIC SPAM-PROOF REVIEW SYSTEM
+    // RATING & DYNAMIC GOOGLE REVIEW SYSTEM
     // ==========================================
-    const FB_REVIEWS_URL = "https://www.facebook.com/reelmomentos/reviews/";
+    // Paste your Google Review link here:
+    const GOOGLE_REVIEW_URL = "https://g.page/r/YOUR_GOOGLE_REVIEW_LINK_HERE/review";
+
     const starButtons = document.querySelectorAll('.star-btn');
     const reviewSuggestions = document.getElementById('reviewSuggestions');
     const lowRatingFeedback = document.getElementById('lowRatingFeedback');
@@ -745,7 +762,6 @@
       "Best photobooth setup we have experienced!"
     ];
 
-    // Category-specific feature highlights
     const printFeatures = [
       "The magnetic prints came out super clear and sharp.",
       "The digital copy via QR code was instantaneous and smooth.",
@@ -779,7 +795,6 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // Generates unique reviews and renders them onto the buttons
     function randomizeReviewChips() {
       const rev1 = `${getRandomItem(reviewOpeners)} ${getRandomItem(printFeatures)} ${getRandomItem(reviewClosings)}`;
       const rev2 = `${getRandomItem(reviewOpeners)} ${getRandomItem(serviceFeatures)} ${getRandomItem(reviewClosings)}`;
@@ -805,7 +820,7 @@
 
         if (rating >= 4) {
           lowRatingFeedback.style.display = 'none';
-          randomizeReviewChips(); // Fresh suggestions generated every time 4-5 stars is tapped
+          randomizeReviewChips();
           reviewSuggestions.style.display = 'flex';
         } else {
           reviewSuggestions.style.display = 'none';
@@ -814,7 +829,6 @@
       });
     });
 
-    // Shuffle Button Handler
     if (shuffleReviewsBtn) {
       shuffleReviewsBtn.addEventListener('click', () => {
         randomizeReviewChips();
@@ -822,40 +836,155 @@
       });
     }
 
-    // 1-Tap Copy & Clean Direct Navigation
+    // 1-Tap Copy & Clean Redirect to Google Review Form
     [chip1, chip2, chip3].forEach(chip => {
       chip.addEventListener('click', () => {
         const textToCopy = chip.dataset.review;
 
         navigator.clipboard.writeText(textToCopy).then(() => {
-          showToast("✓ Review copied! Opening Facebook...");
+          showToast("✓ Review copied! Opening Google...");
           
-          // Smooth 700ms delay so the guest sees the toast, then navigates directly
           setTimeout(() => {
-            window.location.href = FB_REVIEWS_URL;
+            window.location.href = GOOGLE_REVIEW_URL;
           }, 700);
         }).catch(() => {
-          window.location.href = FB_REVIEWS_URL;
+          window.location.href = GOOGLE_REVIEW_URL;
         });
       });
     });
 
-    // 1-Tap Copy & Redirect with Dynamic Sentence Variations
-    reviewChips.forEach(chip => {
-      chip.addEventListener('click', () => {
-        const uniqueReview = `${getRandomPoolItem(reviewOpeners)} ${getRandomPoolItem(reviewFeatures)} ${getRandomPoolItem(reviewClosings)}`;
+    // // ==========================================
+    // // RATING & DYNAMIC SPAM-PROOF REVIEW SYSTEM
+    // // ==========================================
+    // const FB_REVIEWS_URL = "https://www.facebook.com/reelmomentos/reviews/";
+    // const starButtons = document.querySelectorAll('.star-btn');
+    // const reviewSuggestions = document.getElementById('reviewSuggestions');
+    // const lowRatingFeedback = document.getElementById('lowRatingFeedback');
+    // const shuffleReviewsBtn = document.getElementById('shuffleReviewsBtn');
+    // const chip1 = document.getElementById('reviewChip1');
+    // const chip2 = document.getElementById('reviewChip2');
+    // const chip3 = document.getElementById('reviewChip3');
 
-        navigator.clipboard.writeText(uniqueReview).then(() => {
-          showToast("✓ Review copied! Opening Facebook...");
+    // // Dynamic word pools
+    // const reviewOpeners = [
+    //   "Had an awesome time with Reel Momentos!",
+    //   "Super fun photobooth experience tonight!",
+    //   "Loved taking photos with Reel Momentos!",
+    //   "Such a great addition to the celebration!",
+    //   "Best photobooth setup we have experienced!"
+    // ];
+
+    // // Category-specific feature highlights
+    // const printFeatures = [
+    //   "The magnetic prints came out super clear and sharp.",
+    //   "The digital copy via QR code was instantaneous and smooth.",
+    //   "Print quality was crisp and downloading via QR was effortless.",
+    //   "Photos printed fast and the QR scan feature was seamless."
+    // ];
+
+    // const serviceFeatures = [
+    //   "The booth team was very polite, accommodating, and energetic.",
+    //   "Super friendly operators who assisted everyone with a smile.",
+    //   "The team made everyone comfortable and hyped up the crowd.",
+    //   "Very professional staff and smooth, organized booth flow."
+    // ];
+
+    // const overallFeatures = [
+    //   "The photo strip layout design was really clean and vibrant.",
+    //   "Zero hassle claiming our pictures, scanned and saved right away.",
+    //   "Great props, sleek booth design, and high quality captures.",
+    //   "Everyone at the party loved the booth and the souvenirs."
+    // ];
+
+    // const reviewClosings = [
+    //   "Highly recommended for events and parties! 📸✨",
+    //   "Definitely booking them for our next event! 💖",
+    //   "Solid 5-star service from start to finish! 🙌",
+    //   "Keep up the great work, Reel Momentos! 💯🎉",
+    //   "Thank you for capturing these special memories! 🌟"
+    // ];
+
+    // function getRandomItem(arr) {
+    //   return arr[Math.floor(Math.random() * arr.length)];
+    // }
+
+    // // Generates unique reviews and renders them onto the buttons
+    // function randomizeReviewChips() {
+    //   const rev1 = `${getRandomItem(reviewOpeners)} ${getRandomItem(printFeatures)} ${getRandomItem(reviewClosings)}`;
+    //   const rev2 = `${getRandomItem(reviewOpeners)} ${getRandomItem(serviceFeatures)} ${getRandomItem(reviewClosings)}`;
+    //   const rev3 = `${getRandomItem(reviewOpeners)} ${getRandomItem(overallFeatures)} ${getRandomItem(reviewClosings)}`;
+
+    //   chip1.dataset.review = rev1;
+    //   chip1.innerHTML = `🖨️ "${rev1}"`;
+
+    //   chip2.dataset.review = rev2;
+    //   chip2.innerHTML = `💖 "${rev2}"`;
+
+    //   chip3.dataset.review = rev3;
+    //   chip3.innerHTML = `✨ "${rev3}"`;
+    // }
+
+    // // Star Selection Handler
+    // starButtons.forEach(btn => {
+    //   btn.addEventListener('click', () => {
+    //     const rating = parseInt(btn.dataset.star, 10);
+    //     starButtons.forEach((b, idx) => {
+    //       b.classList.toggle('active', idx < rating);
+    //     });
+
+    //     if (rating >= 4) {
+    //       lowRatingFeedback.style.display = 'none';
+    //       randomizeReviewChips(); // Fresh suggestions generated every time 4-5 stars is tapped
+    //       reviewSuggestions.style.display = 'flex';
+    //     } else {
+    //       reviewSuggestions.style.display = 'none';
+    //       lowRatingFeedback.style.display = 'block';
+    //     }
+    //   });
+    // });
+
+    // // Shuffle Button Handler
+    // if (shuffleReviewsBtn) {
+    //   shuffleReviewsBtn.addEventListener('click', () => {
+    //     randomizeReviewChips();
+    //     showToast("🔄 Generated new review options!");
+    //   });
+    // }
+
+    // // 1-Tap Copy & Clean Direct Navigation
+    // [chip1, chip2, chip3].forEach(chip => {
+    //   chip.addEventListener('click', () => {
+    //     const textToCopy = chip.dataset.review;
+
+    //     navigator.clipboard.writeText(textToCopy).then(() => {
+    //       showToast("✓ Review copied! Opening Facebook...");
           
-          setTimeout(() => {
-            window.open(FB_REVIEWS_URL, '_blank');
-          }, 800);
-        }).catch(() => {
-          window.open(FB_REVIEWS_URL, '_blank');
-        });
-      });
-    });
+    //       // Smooth 700ms delay so the guest sees the toast, then navigates directly
+    //       setTimeout(() => {
+    //         window.location.href = FB_REVIEWS_URL;
+    //       }, 700);
+    //     }).catch(() => {
+    //       window.location.href = FB_REVIEWS_URL;
+    //     });
+    //   });
+    // });
+
+    // // 1-Tap Copy & Redirect with Dynamic Sentence Variations
+    // reviewChips.forEach(chip => {
+    //   chip.addEventListener('click', () => {
+    //     const uniqueReview = `${getRandomPoolItem(reviewOpeners)} ${getRandomPoolItem(reviewFeatures)} ${getRandomPoolItem(reviewClosings)}`;
+
+    //     navigator.clipboard.writeText(uniqueReview).then(() => {
+    //       showToast("✓ Review copied! Opening Facebook...");
+          
+    //       setTimeout(() => {
+    //         window.open(FB_REVIEWS_URL, '_blank');
+    //       }, 800);
+    //     }).catch(() => {
+    //       window.open(FB_REVIEWS_URL, '_blank');
+    //     });
+    //   });
+    // });
 
     // Cloudinary Carousel Fetch + Auto-Scroll Animation
     async function fetchCloudinaryMemories(eventId) {
