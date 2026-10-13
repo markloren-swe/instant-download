@@ -6,6 +6,9 @@
   <title>Reel Momentos - Download Photo</title>
   
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Modern Mobile Carousel (Swiper.js) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
   <style>
     :root {
@@ -265,15 +268,17 @@
       transform: scale(1.2);
     }
 
-    /* Animated Carousel */
+    /* Modern Swiper Carousel */
     .carousel-section {
       width: 100%;
       background: var(--card-bg);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 12px;
+      padding: 14px 12px;
       display: none;
+      overflow: hidden;
     }
 
     .carousel-section h2 {
@@ -281,39 +286,32 @@
       text-transform: uppercase;
       color: #c084fc;
       font-weight: 700;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       text-align: left;
     }
 
-    .carousel-wrapper {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      height: 110px;
-      align-items: center;
-      padding-bottom: 2px;
-      scroll-behavior: smooth;
+    .recent-swiper {
+      width: 100%;
+      padding: 2px 0;
     }
 
-    .carousel-wrapper::-webkit-scrollbar {
-      display: none;
+    .swiper-slide {
+      width: auto !important;
+      height: 110px;
     }
 
     .carousel-item {
-      flex: 0 0 auto;
       height: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
       border: 2px solid rgba(255, 255, 255, 0.15);
       background: rgba(0, 0, 0, 0.3);
       cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease;
+      transition: transform 0.15s ease, border-color 0.2s ease;
     }
 
     .carousel-item:active {
-      transform: scale(1.05);
+      transform: scale(0.96);
       border-color: #a855f7;
     }
 
@@ -322,6 +320,8 @@
       width: auto;
       display: block;
       pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     /* Interstitial Support Modal */
@@ -487,10 +487,12 @@
         </div>
       </div>
 
-      <!-- Dynamic Event Carousel -->
+      <<!-- Dynamic Event Carousel -->
       <div class="carousel-section" id="carouselSection">
         <h2>📸 Recent Event Memories</h2>
-        <div class="carousel-wrapper" id="carouselWrapper"></div>
+        <div class="swiper recent-swiper">
+          <div class="swiper-wrapper" id="carouselWrapper"></div>
+        </div>
       </div>
 
       <!-- Experience Rating Widget -->
@@ -1000,7 +1002,9 @@
     //   });
     // });
 
-    // Cloudinary Carousel Fetch + Auto-Scroll Animation
+    let memoriesSwiper = null;
+
+    // Cloudinary Carousel Fetch + Swiper Initialization
     async function fetchCloudinaryMemories(eventId) {
       try {
         const jsonUrl = `https://res.cloudinary.com/${CLOUD_NAME}/raw/upload/reel-momentos/${eventId}/latest.json?t=${Date.now()}`;
@@ -1010,62 +1014,52 @@
 
         if (data.latest_photos && data.latest_photos.length > 0) {
           carouselWrapper.innerHTML = '';
+
           data.latest_photos.forEach(imgUrl => {
-            const item = document.createElement('div');
-            item.className = 'carousel-item';
-            item.innerHTML = `<img src="${imgUrl}" alt="Event Memory" draggable="false" oncontextmenu="return false;">`;
-            item.addEventListener('click', () => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.innerHTML = `
+              <div class="carousel-item">
+                <img src="${imgUrl}" alt="Event Memory" draggable="false" oncontextmenu="return false;">
+              </div>
+            `;
+
+            slide.querySelector('.carousel-item').addEventListener('click', () => {
               activePhotoUrl = imgUrl;
               skeletonLoader.style.display = 'block';
               photoPreview.classList.remove('loaded');
               photoPreview.src = imgUrl;
               window.scrollTo({ top: 120, behavior: 'smooth' });
             });
-            carouselWrapper.appendChild(item);
+
+            carouselWrapper.appendChild(slide);
           });
+
           carouselSection.style.display = 'block';
 
-          // Start Smooth Auto-Scroll Animation
-          startCarouselAutoScroll();
+          // Destroy previous instance if re-fetching
+          if (memoriesSwiper) {
+            memoriesSwiper.destroy(true, true);
+          }
+
+          // Initialize Swiper with infinite loop and autoplay
+          memoriesSwiper = new Swiper('.recent-swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 10,
+            loop: data.latest_photos.length > 2, // Loops seamlessly when enough photos exist
+            speed: 600,
+            autoplay: {
+              delay: 2400,
+              disableOnInteraction: false,
+              pauseOnMouseEnter: true,
+            },
+            grabCursor: true,
+            resistanceRatio: 0.85,
+          });
         }
       } catch (e) {
         console.warn("Carousel unavailable:", e);
       }
-    }
-
-    function startCarouselAutoScroll() {
-      let scrollSpeed = 1;
-      let isPaused = false;
-
-      // Pause during touch or hover interaction
-      carouselWrapper.addEventListener('touchstart', () => { isPaused = true; });
-      carouselWrapper.addEventListener('touchend', () => { setTimeout(() => { isPaused = false; }, 2000); });
-      carouselWrapper.addEventListener('mouseenter', () => { isPaused = true; });
-      carouselWrapper.addEventListener('mouseleave', () => { isPaused = false; });
-
-      setInterval(() => {
-        if (!isPaused && carouselWrapper.scrollWidth > carouselWrapper.clientWidth) {
-          const maxScroll = carouselWrapper.scrollWidth - carouselWrapper.clientWidth;
-
-          // Uses a 4px buffer to bypass device sub-pixel rounding limits
-          if (carouselWrapper.scrollLeft >= maxScroll - 4) {
-            isPaused = true; // Stop advancing while resetting
-
-            // 1. Pause for 1.2s at the end so guests can see the last photo
-            setTimeout(() => {
-              // 2. Smoothly glide back to the first photo
-              carouselWrapper.scrollTo({ left: 0, behavior: 'smooth' });
-
-              // 3. Resume forward scrolling once the rewind completes
-              setTimeout(() => {
-                isPaused = false;
-              }, 800);
-            }, 1200);
-          } else {
-            carouselWrapper.scrollLeft += scrollSpeed;
-          }
-        }
-      }, 35);
     }
   </script>
 </body>
