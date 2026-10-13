@@ -822,7 +822,7 @@
       });
     }
 
-    // 1-Tap Copy & Direct App Deep-Link
+    // 1-Tap Copy & Clean Direct Navigation
     [chip1, chip2, chip3].forEach(chip => {
       chip.addEventListener('click', () => {
         const textToCopy = chip.dataset.review;
@@ -830,27 +830,11 @@
         navigator.clipboard.writeText(textToCopy).then(() => {
           showToast("✓ Review copied! Opening Facebook...");
           
+          // Smooth 700ms delay so the guest sees the toast, then navigates directly
           setTimeout(() => {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-              // Deep link directly into the Facebook App's internal browser
-              const fbAppReviewUrl = "fb://facewebmodal/f?href=" + encodeURIComponent(FB_REVIEWS_URL);
-              
-              // 1. Try launching the Facebook App
-              window.location.href = fbAppReviewUrl;
-              
-              // 2. Fallback to Safari/Chrome if the app doesn't open
-              setTimeout(() => {
-                window.location.href = FB_REVIEWS_URL;
-              }, 1200);
-            } else {
-              // Desktop fallback
-              window.open(FB_REVIEWS_URL, '_blank');
-            }
-          }, 600);
+            window.location.href = FB_REVIEWS_URL;
+          }, 700);
         }).catch(() => {
-          // Direct fallback if clipboard permission is blocked
           window.location.href = FB_REVIEWS_URL;
         });
       });
