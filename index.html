@@ -791,21 +791,35 @@
       "Thank you for capturing these special memories! 🌟"
     ];
 
+    // Helper: Pick N guaranteed unique items from an array (no duplicates)
+    function getUniqueItems(arr, count) {
+      const shuffled = [...arr].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
     function getRandomItem(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
     function randomizeReviewChips() {
-      const rev1 = `${getRandomItem(reviewOpeners)} ${getRandomItem(printFeatures)} ${getRandomItem(reviewClosings)}`;
-      const rev2 = `${getRandomItem(reviewOpeners)} ${getRandomItem(serviceFeatures)} ${getRandomItem(reviewClosings)}`;
-      const rev3 = `${getRandomItem(reviewOpeners)} ${getRandomItem(overallFeatures)} ${getRandomItem(reviewClosings)}`;
+      // Pick 3 completely distinct openers and 3 distinct closers
+      const [open1, open2, open3] = getUniqueItems(reviewOpeners, 3);
+      const [close1, close2, close3] = getUniqueItems(reviewClosings, 3);
 
+      // Pair each with its dedicated theme
+      const rev1 = `${open1} ${getRandomItem(printFeatures)} ${close1}`;
+      const rev2 = `${open2} ${getRandomItem(serviceFeatures)} ${close2}`;
+      const rev3 = `${open3} ${getRandomItem(overallFeatures)} ${close3}`;
+
+      // Chip 1: Print & QR Tech focus
       chip1.dataset.review = rev1;
       chip1.innerHTML = `🖨️ "${rev1}"`;
 
+      // Chip 2: Staff & Service focus
       chip2.dataset.review = rev2;
       chip2.innerHTML = `💖 "${rev2}"`;
 
+      // Chip 3: Overall Vibe & Experience focus
       chip3.dataset.review = rev3;
       chip3.innerHTML = `✨ "${rev3}"`;
     }
