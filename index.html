@@ -1037,6 +1037,7 @@
       let scrollSpeed = 1;
       let isPaused = false;
 
+      // Pause during touch or hover interaction
       carouselWrapper.addEventListener('touchstart', () => { isPaused = true; });
       carouselWrapper.addEventListener('touchend', () => { setTimeout(() => { isPaused = false; }, 2000); });
       carouselWrapper.addEventListener('mouseenter', () => { isPaused = true; });
@@ -1044,9 +1045,24 @@
 
       setInterval(() => {
         if (!isPaused && carouselWrapper.scrollWidth > carouselWrapper.clientWidth) {
-          carouselWrapper.scrollLeft += scrollSpeed;
-          if (carouselWrapper.scrollLeft >= carouselWrapper.scrollWidth - carouselWrapper.clientWidth) {
-            carouselWrapper.scrollLeft = 0; // Seamless loop back
+          const maxScroll = carouselWrapper.scrollWidth - carouselWrapper.clientWidth;
+
+          // Uses a 4px buffer to bypass device sub-pixel rounding limits
+          if (carouselWrapper.scrollLeft >= maxScroll - 4) {
+            isPaused = true; // Stop advancing while resetting
+
+            // 1. Pause for 1.2s at the end so guests can see the last photo
+            setTimeout(() => {
+              // 2. Smoothly glide back to the first photo
+              carouselWrapper.scrollTo({ left: 0, behavior: 'smooth' });
+
+              // 3. Resume forward scrolling once the rewind completes
+              setTimeout(() => {
+                isPaused = false;
+              }, 800);
+            }, 1200);
+          } else {
+            carouselWrapper.scrollLeft += scrollSpeed;
           }
         }
       }, 35);
